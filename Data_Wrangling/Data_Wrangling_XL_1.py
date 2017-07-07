@@ -22,54 +22,39 @@ def open_zip(datafile):
 
 
 def parse_file(datafile):
+    data = {}
     workbook = xlrd.open_workbook(datafile+'.xls')
     sheet = workbook.sheet_by_index(0)
-    data = []
-    sheet_data = [[sheet.cell_value(r, col) for col in range(2)] for r in range(sheet.nrows)]
-    time_data = sheet.col_values(0, start_rowx=1, end_rowx=None)
-    coast_data = sheet.col_values(1, start_rowx=1, end_rowx=None)
-    east_data = sheet.col_values(2, start_rowx=1, end_rowx=None)
-    far_west_data = sheet.col_values(3, start_rowx=1, end_rowx=None)
-    north_data= sheet.col_values(4, start_rowx=1, end_rowx=None)
-    north_c_data= sheet.col_values(5, start_rowx=1, end_rowx=None)
-    southern_data= sheet.col_values(6, start_rowx=1, end_rowx=None)
-    south_c_data= sheet.col_values(7, start_rowx=1, end_rowx=None)
-    west_data= sheet.col_values(8, start_rowx=1, end_rowx=None)
-    ercot_data= sheet.col_values(9, start_rowx=1, end_rowx=None)
+    for n in range(1,9):
+        station = sheet.cell_value(0,n)
+        cv = sheet.col_values(n, start_rowx=1,end_rowx=None)
+        max_value = max(cv)
+        max_index = cv.index(max_value) +1
+        max_value_time = sheet.cell_value(max_index,0)
+        max_value_time = xlrd.xldate_as_tuple(max_value_time,0)
+        data[station] = {"maxvalue" : max_value, "maxtime" : max_value_time}
 
-    region_list = []
-    region_list.extend([coast_data,east_data,far_west_data,north_data,north_c_data,southern_data, south_c_data, west_data, ercot_data])
-    print (len(region_list))
-    header_row = []
-    data.extend(['Station', 'Year', 'Month', 'Day', 'Hour', 'Max Load'])
-    stations = ['COAST', 'EAST', 'FAR_WEST', 'NORTH',
-                        'NORTH_C', 'SOUTHERN', 'SOUTH_C', 'WEST']
-
-    for region,count in enumerate(region_list):
-        max_number = max(region)
-        max_number_index = region.index(max_number)+1
-        #max_time = time_data[max_number_index]
-        max_time = sheet.cell_value(max_number_index, 0)
-        max_time = xlrd.xldate_as_tuple(max_time,0)
-        #data.append[ max_time]
-        print (max_number,max_time)
-    # YOUR CODE HERE
-    # Remember that you can use xlrd.xldate_as_tuple(sometime, 0) to convert
-    # Excel date to Python tuple of (year, month, day, hour, minute, second)
-
+    print data
     return data
+
+
+
+
 
 
 def save_file(data, filename):
     with open(filename, "wb") as csv_file:
         writer = csv.writer(csv_file, delimiter='|')
-        for line in data:
-            writer.writerow(line)
+        writer.writerow(["Station", "Year", "Month", "Day", "Hour", "Max Load"])
+        for area in data:
+            year, month, day, hour, _, _ = data[area]["maxtime"]
+            writer.writerow([area, year, month, day, hour, data[area]["maxvalue"]])
+
     return None
 # YOUR CODE HERE
 
 
-def test():
+def run():
     open_zip(datafile)
     data = parse_file(datafile)
     save_file(data, outfile)
@@ -113,4 +98,4 @@ def test():
 
 
 if __name__ == "__main__":
-    test()
+    run()
