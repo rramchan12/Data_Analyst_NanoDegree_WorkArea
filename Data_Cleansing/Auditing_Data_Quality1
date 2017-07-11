@@ -54,34 +54,37 @@ def audit_file(filename, fields):
         #print headers
         for row in reader:
             for header in headers:
-
+                type = {}
                 field = row[header]
                 type = validate_type(field)
-                fieldtypes[header]= type
+
                 if header == 'areaLand':
                     print field, type
 
+                orginal_type = fieldtypes[header]
+                orginal_type = orginal_type.add(type)
+                fieldtypes[header]= orginal_type
     #print fieldtypes
     return fieldtypes
 
 
 def validate_type(field):
-    types = []
+    types = set()
 
     if field == 'NULL' or field =='':
-        types.append(type(None))
+        types.add(type(None))
     elif str(field).startswith('{'):
-        types.append(type([]))
+        types.add(type([]))
     else:
         try:
             if int(field):
-                types.append(type(1))
+                types.add(type(1))
         except ValueError:
             try:
                 float(field)
-                types.append(type(1.1))
+                types.add(type(1.1))
             except ValueError:
-                types.append(type("string"))
+                types.add(type("string"))
 
 
 
