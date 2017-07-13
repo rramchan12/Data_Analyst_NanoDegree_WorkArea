@@ -44,6 +44,7 @@ FIELDS = ["name", "timeZone_label", "utcOffset", "homepage", "governmentType_lab
 def audit_file(filename, fields):
     fieldtypes = {}
 
+
     with open(filename, "r") as f:
         reader = csv.DictReader(f)
         '''Skip 3 rows'''
@@ -51,40 +52,61 @@ def audit_file(filename, fields):
             reader.next()
 
         headers = reader.fieldnames
+        print headers
         #print headers
         for row in reader:
-            for header in headers:
-                type = {}
+            for header in FIELDS:
+                type = []
                 field = row[header]
                 type = validate_type(field)
 
-                if header == 'areaLand':
-                    print field, type
+                #if header == 'areaLand':
+                    #print field, type
 
-                orginal_type = fieldtypes[header]
-                orginal_type = orginal_type.add(type)
-                fieldtypes[header]= orginal_type
+                if fieldtypes.has_key(header):
+                    print ("key present :"+header)
+                    orginal_type = fieldtypes[header]
+                    print ("before :")
+                    print (orginal_type)
+                    if orginal_type != None:
+                        print ("after0=")
+                        print tuple(type)
+                        orginal_type.update(tuple(type))
+                        print ("after1 :")
+                        print (orginal_type)
+                        fieldtypes[header] = orginal_type
+                        print ("after :")
+                        print (fieldtypes[header])
+                    else:
+                        print "Null Original Type :"
+                else:
+                    print ("key not present :" + header)
+                    #print type
+                    fieldtypes[header] = set(type)
+                    print fieldtypes[header]
+
     #print fieldtypes
     return fieldtypes
 
 
 def validate_type(field):
-    types = set()
+    types = []
 
     if field == 'NULL' or field =='':
-        types.add(type(None))
+        types.append(type(None))
     elif str(field).startswith('{'):
-        types.add(type([]))
+        types.append(type([]))
     else:
         try:
             if int(field):
-                types.add(type(1))
+                types.append(type(1))
         except ValueError:
             try:
                 float(field)
-                types.add(type(1.1))
+                types.append(type(1.1))
             except ValueError:
-                types.add(type("string"))
+                print("ValueError")
+                #types.append(type("string"))
 
 
 
