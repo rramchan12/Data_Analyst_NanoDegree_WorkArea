@@ -48,11 +48,10 @@ def audit_file(filename, fields):
     with open(filename, "r") as f:
         reader = csv.DictReader(f)
         '''Skip 3 rows'''
-        for i in range(2):
+        for i in range(3):
             reader.next()
 
         headers = reader.fieldnames
-        print headers
         #print headers
         for row in reader:
             for header in FIELDS:
@@ -64,26 +63,13 @@ def audit_file(filename, fields):
                     #print field, type
 
                 if fieldtypes.has_key(header):
-                    print ("key present :"+header)
                     orginal_type = fieldtypes[header]
-                    print ("before :")
-                    print (orginal_type)
-                    if orginal_type != None:
-                        print ("after0=")
-                        print tuple(type)
-                        orginal_type.update(tuple(type))
-                        print ("after1 :")
-                        print (orginal_type)
-                        fieldtypes[header] = orginal_type
-                        print ("after :")
-                        print (fieldtypes[header])
-                    else:
-                        print "Null Original Type :"
+                    orginal_type.update(tuple(type))
+                    fieldtypes[header] = orginal_type
+
                 else:
-                    print ("key not present :" + header)
-                    #print type
                     fieldtypes[header] = set(type)
-                    print fieldtypes[header]
+
 
     #print fieldtypes
     return fieldtypes
@@ -105,8 +91,7 @@ def validate_type(field):
                 float(field)
                 types.append(type(1.1))
             except ValueError:
-                print("ValueError")
-                #types.append(type("string"))
+                types.append(type("string"))
 
 
 

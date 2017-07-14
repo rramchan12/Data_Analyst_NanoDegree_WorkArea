@@ -32,7 +32,6 @@ def split_file(filename):
         #root = get_root(f)
         counter = 0;
         split_string = re.compile('<\?xml [^?>]+\?>'), re.M)
-
         files = split_string.findall(data)
 
         for file in files:
