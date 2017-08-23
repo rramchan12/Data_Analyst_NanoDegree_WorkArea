@@ -1,0 +1,251 @@
+---
+title: "EDA_DiamondDataSet"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load Library
+```{r}
+library(ggplot2)
+ds = data(diamonds)
+diamonds
+str(diamonds)
+str(unique(diamonds$color))
+?(diamonds)
+
+```
+
+#Price Histogram
+```{r}
+qplot(x=price, data=diamonds, xlab = "Price", ylab = "No of Diamonds",color = I('black'), fill = I('#F79420')) 
+  
+summary(diamonds$price)
+```
+#Diamonds costing various prices
+```{r}
+sum (diamonds$price<500)
+sum (diamonds$price<250)
+sum (diamonds$price>=15000)
+```
+
+#Exploring
+```{r}
+qplot(x=price, data=diamonds, xlab = "Price", ylab = "No of Diamonds",color = I('black'), fill = I('#F79420'), binwidth = 500)+
+  scale_x_continuous(limits = c(0,10000), breaks = seq(0,10000,500))
+```
+## Break out the histogram of diamond prices by cut.
+
+```{r}
+if (!require(gridExtra))
+{
+install.packages('gridExtra')
+}
+library(gridExtra)
+  
+library(ggplot2)
+
+qplot(x=price, data=diamonds, xlab = "Price", ylab = "No of Diamonds",color = I('black'), fill = I('#F79420'))+
+  facet_wrap(~cut)
+
+by(diamonds$cut, data = diamonds$price, summary)
+by(diamonds$cut, data = diamonds$price, max)
+
+```
+#Free up scales based on the numbers 
+
+```{r}
+hp <- ggplot(diamonds, aes(x=price)) + geom_histogram(colour="white", binwidth = 500)
+hp + facet_wrap(~cut, scales='free')
+```
+
+# Create a histogram of price per carat
+# and facet it by cut. You can make adjustments
+# to the code from the previous exercise to get
+# started.
+
+# Adjust the bin width and transform the scale
+# of the x-axis using log10.
+
+```{r}
+price_per_carat = ggplot(diamonds, aes(x=(price+1/carat))) +geom_histogram(color = I('black'), fill = I('#F79420'), binwidth = 1000)+xlab("Price Per Carat") 
+price_per_carat + facet_wrap(~cut)
+
+```
+
+# Investigate the price of diamonds using box plots,
+# numerical summaries, and one of the following categorical
+# variables: cut, clarity, or color.
+
+```{r}
+qplot(x=cut, y=price, geom = 'boxplot', data= diamonds) 
+qplot(x=clarity, y=price, geom = 'boxplot', data= diamonds)+ coord_cartesian(ylim= c(0,6000))
+qplot(x=color, y=price, geom = 'boxplot', data= diamonds)
+
+by( diamonds$price, diamonds$color, summary)
+
+IQR(subset(diamonds, diamonds$color == 'D')$price)
+IQR(subset(diamonds, diamonds$color == 'J')$price)
+
+```
+
+# Investigate the price per carat of diamonds across
+# the different colors of diamonds using boxplots.
+```{r}
+
+qplot(x=color, y=(price/carat), geom = 'boxplot', data= diamonds)+ coord_cartesian(ylim=c(0,8000))
+
+```
+#Investigating weights of diamonds(carat) using a frequency Polygon
+#Used Different Bin Widths to show how a frequency polygon changes
+
+```{r}
+library(gridExtra)
+str(diamonds$carat)
+p1 = qplot(x = carat, data = diamonds ,geom = 'freqpoly')+scale_x_continuous(breaks = seq(0,6,0.5))
+p2= qplot(x = carat, data = diamonds ,geom = 'freqpoly', binwidth=0.5)+scale_x_continuous(breaks = seq(0,6,0.5))
+p3= qplot(x = carat, data = diamonds ,geom = 'freqpoly', binwidth=0.1)+scale_x_continuous(breaks = seq(0,6,0.5))
+grid.arrange(p1,p2,p3)
+
+
+```
+#Using GapMinder Data
+#You might use a simple histogram, a boxplot split over a categorical variable,
+#or a frequency polygon. The choice is yours!
+```{r}
+
+if(!require(readxl)){
+  install.packages("readxl")
+}
+if(!require(tidyr)){
+  install.packages("tidyr")
+}
+if(!require(dplyr)){
+  install.packages("dplyr")
+}
+
+p_data <- read_excel('indicator_median age.xlsx')
+
+#gathering years in Columns
+gathered_p_data = tidyr::gather(p_data, "year","Median_Age", 2:22)
+
+#remove any NA
+cleaned_p_data = dplyr::filter(gathered_p_data, !is.na(Median_Age))
+colnames(cleaned_p_data)[1] <- "Country"
+
+#Choose Countries 
+selected_countries <- c('India', 'United States', 'United Kingdom', 'China', 'Australia')
+
+library(ggplot2)
+ggplot(subset(cleaned_p_data, as.numeric(year)%%10 ==0 & Country %in% selected_countries))+
+  geom_line(aes(x=year, y=Median_Age, color=Country, group = Country))+
+  theme(legend.position="top") +
+  labs(x='Year', y='Median Age')
+  
+```
+#Box Plot of Population to give an example of absolute values 
+
+```{r}
+ggplot(subset(cleaned_p_data, Country %in% selected_countries), 
+       aes(x=Country, y=Median_Age, fill = Country)) +
+  geom_boxplot() +
+  theme(legend.position="none", axis.text.x=element_text(angle=90)) +
+  labs(x='Country', y='Median Age')
+```
+
+#Oil Production Example
+```{r}
+
+library(readxl)
+xlsx_oil <- read_excel('Oil Production.xls.xlsx')
+View(xlsx_oil)
+
+
+library(tidyr)
+library(dplyr)
+
+tidy_oil <- tidyr::gather(xlsx_oil, "year", "production", 2:48)
+
+oil_production <- dplyr::filter(tidy_oil, !is.na(production))
+
+colnames(oil_production)[1] <-'Country'
+#Try to plot only for a subset of countries 
+
+selected_countries <- c('Brazil', 'Canada', 'China', 'Iraq', 'Nigeria', 'Russia', 'Saudi Arabia', 'United States', 'Venezuela')
+
+library(ggplot2)
+ggplot(subset(oil_production, as.numeric(year)%%5 == 0 & Country %in% selected_countries)) +
+  geom_line(aes(x=year, y=production, colour=Country,  group=Country)) +
+  theme(legend.position="top") +
+  labs(x='Year', y='Oil Production')
+
+```
+
+#Shows the gaps between countries in terms of Oil Production 
+```{r}
+ggplot(subset(oil_production, Country %in% selected_countries), 
+       aes(x=Country, y=production, fill = Country)) +
+  geom_boxplot() +
+  theme(legend.position="none", axis.text.x=element_text(angle=90)) +
+  labs(x='Country', y='Oil Production')
+```
+
+# Your task is to investigate the distribution of your friends'
+# birth months and days.
+# Here some questions you could answer, and we hope you think of others.
+# **********************************************************************
+
+# How many people share your birthday? Do you know them?
+# (Reserve time with them or save money to buy them a gift!)
+# Which month contains the most number of birthdays?
+# How many birthdays are in each month?
+# Which day of the year has the most number of birthdays?
+# Do you have at least 365 friends that have birthdays on everyday
+# of the year?
+
+```{r}
+
+birthday_data <- read.csv('birthdaysExample.csv', header = T , stringsAsFactors = F)
+birthday_data$dates.d <- as.Date(birthday_data$dates, format = "%m/%d/%y")
+
+
+if (!require(lubridate)){
+  install.packages('lubridate')
+}
+
+library(lubridate)
+
+
+# How many people share your birthday? Do you know them?
+length(birthday_data[month(birthday_data$dates.d)==09 & day(birthday_data$dates.d) ==27,])
+
+# Which month contains the most number of birthdays?
+library(ggplot2)
+
+qplot(x = month(birthday_data$dates.d), data = birthday_data)+ scale_x_discrete( breaks = seq(1,12,1) )
+#March
+
+#How many birthdays are in each month?
+
+count <- as.data.frame(table(month(birthday_data$dates.d)))
+count[order(-count$Freq),]
+
+#Which day of the year has the most birthdays?
+count <- as.data.frame(table(yday(birthday_data$dates.d)))
+count[order(-count$Freq),]
+#37,142,197
+
+#Do you have at least 365 friends that have birthdays on everyday
+# of the year?
+
+julian_days <- seq(1,365, 1)
+missing <- julian_days[!(julian_days %in% count$Var1)]
+ref = as.Date("2014-12-31")
+for (i in 1:length(missing)){
+  print(format(ref + missing[i], "%m/%d"))
+}
+
+```
+

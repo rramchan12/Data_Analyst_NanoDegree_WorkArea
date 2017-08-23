@@ -11,8 +11,11 @@ names(pf)
 ```   
 #Plot histogram of day of Birth
 ```{r}
+if (!require('ggplot2'))
+{
 install.packages("ggplot2")
 library(ggplot2)
+}
 
 qplot(x= dob_day, data= pf)+
   scale_x_continuous(breaks=1:31)+
@@ -66,8 +69,12 @@ qplot(x=age, data=pf, binwidth=1,   color = I('black'), fill = I('#F79420'), xla
 #Transformed using log 10
 #Transformed using sqrt
 ```{r}
+if (!require(gridExtra))
+{
 install.packages('gridExtra')
+}
 library(gridExtra)
+  
 library(ggplot2)
 
 p1 = qplot(x=friend_count, data = pf,color = I('black'), fill = I('#F79420'), xlab = 'Friend Count(normal Scale)', ylab = 'No of Users')
